@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/game_settings.dart';
+import 'package:flutter_app/utils/constants.dart';
 import 'package:flutter_app/utils/screen_size.dart';
 import 'package:flutter_app/utils/utils.dart';
+
+const BACKGROUND = 0;
+const ICON = 1;
+const TEXT = 2;
 
 class PlayerSection extends StatefulWidget {
   final Function fun;
   final bool isActive;
   final int seconds;
-  final bool playerOne;
+  final bool isPlayerOne;
 
   final GameSettings gameSettings;
 
@@ -16,60 +21,48 @@ class PlayerSection extends StatefulWidget {
       this.isActive,
       this.seconds,
       this.gameSettings,
-      this.playerOne});
+      this.isPlayerOne});
 
   @override
   _PlayerSectionState createState() => _PlayerSectionState();
 }
 
 class _PlayerSectionState extends State<PlayerSection> {
-  int durationOpacity = 200;
-  int up = 1;
-  int down = 3;
-
-  // String _formatSeconds(int seconds) {
-  //   Duration duration = Duration(seconds: seconds);
-  //
-  //   String twoDigits(int n) =>
-  //       n.toString().padLeft(2, '0'); // Adds a 0 if needed
-  //   String strMinutes = twoDigits(duration.inMinutes.remainder(60));
-  //   String strSeconds = twoDigits(duration.inSeconds.remainder(60));
-  //
-  //   return '$strMinutes:$strSeconds';
-  // }
+  final durationOpacity = 200;
+  final int up = 1;
+  final int down = 3;
 
   String _getName() {
-    String nameP1 = widget.gameSettings.playerSettings[0].name;
-    String nameP2 = widget.gameSettings.playerSettings[1].name;
-    if (widget.playerOne) {
-      if (nameP1 != null) {
-        if (nameP1.isEmpty) {
-          return 'Player 2';
-        } else {
-          return nameP1;
-        }
-      }
-    } else {
-      if (nameP2 != null) {
-        if (nameP2.isEmpty) {
-          return 'Player 2';
-        } else {
-          return nameP2;
-        }
-      }
-    }
+    String name = widget.isPlayerOne
+        ? widget.gameSettings.playerSettings[0].name
+        : widget.gameSettings.playerSettings[1].name;
+
+    if (name != null && name.isNotEmpty) return name;
 
     return '';
   }
 
-  Color _getColor() {
-    Color colorP1 = widget.gameSettings.playerSettings[0].color;
-    Color colorP2 = widget.gameSettings.playerSettings[1].color;
+  int _getColor(int what) {
+    int backgroundColor;
 
-    if (widget.playerOne) {
-      return colorP1 ?? Color(0xFFE1c699);
+    if (widget.isPlayerOne) {
+      backgroundColor = widget.gameSettings.playerSettings[0].colorHex;
     } else {
-      return colorP2 ?? Color(0xFFE1c699);
+      backgroundColor = widget.gameSettings.playerSettings[1].colorHex;
+    }
+
+    if (what == BACKGROUND) {
+      // The color requested is for the Background -> Returns it if not null or
+      // a generic one otherwise
+      return backgroundColor ?? Color(0xFFE1c699);
+    } else {
+      // The color requested is for either the Icon or the Text -> if the background
+      // color is dark, returns a bright color, otherwise returns the opposite
+      if (backgroundColor != Col.black) {
+        return Col.black;
+      } else {
+        return 0xFFf5f5f5;
+      }
     }
   }
 
@@ -84,7 +77,7 @@ class _PlayerSectionState extends State<PlayerSection> {
           opacity: widget.isActive ? 1 : 0.5,
           child: Container(
             width: double.infinity,
-            color: _getColor(),
+            color: Color(_getColor(BACKGROUND)),
             child: RotatedBox(
               quarterTurns: widget.gameSettings.orientation == LEFT ? 3 : 1,
               child: Column(
@@ -96,7 +89,8 @@ class _PlayerSectionState extends State<PlayerSection> {
                     child: Icon(
                       Icons.timer,
                       size: ScreenSize.h / 15,
-                      color: Color(0xFF333333),
+                      color: Color(_getColor(ICON)),
+                      // Color(0xFF333333),
                     ),
                   ),
                   Text(
@@ -105,7 +99,7 @@ class _PlayerSectionState extends State<PlayerSection> {
                     style: TextStyle(
                       fontSize: ScreenSize.h / 10,
                       fontWeight: FontWeight.w300,
-                      color: Colors.black,
+                      color: Color(_getColor(TEXT)),
                     ),
                   ),
                   Text(

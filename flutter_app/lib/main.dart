@@ -15,7 +15,6 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       routes: routes,
-      // initialRoute: TimerScreen.routeName,
       initialRoute: InitialScreen.routeName,
     );
   }

@@ -1,7 +1,11 @@
+import 'dart:convert' as Convert;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/game_settings.dart';
 import 'package:flutter_app/models/player_settings.dart';
 import 'package:flutter_app/screens/timer/timer_screen.dart';
+import 'package:flutter_app/utils/preference_keys.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StartButton extends StatelessWidget {
   final int orientation;
@@ -17,18 +21,43 @@ class StartButton extends StatelessWidget {
       this.remember})
       : super(key: key);
 
+  void _savePrefs(GameSettings gameSettings) async {
+    var sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences
+        .setBool(PreferenceKeys.saveChanges, remember)
+        .then((value) => print('Remember flag was stored successfully.'))
+        .catchError((e) => print('Remember flag could not be stored: $e'));
+
+    if (remember) {
+      String json = Convert.jsonEncode(gameSettings.toMap());
+      sharedPreferences
+          .setString(PreferenceKeys.gameSettings, json)
+          .then((value) => print('Game settings were stored successfully.'))
+          .catchError((e) => print('Game settings could not be stored: $e'));
+    } else {
+      sharedPreferences
+          .remove(PreferenceKeys.gameSettings)
+          .catchError((e) => print('Game settings could not be removed: $e'));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    _openTimerScreen() {
+    void _openTimerScreen() {
+      GameSettings gameSettings = GameSettings(
+        playerSettings: playersSettings,
+        orientation: orientation,
+        duration: duration,
+      );
+
+      _savePrefs(gameSettings);
+
+      Navigator.pop(context);
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => TimerScreen(
-            gameSettings: GameSettings(
-              playerSettings: playersSettings,
-              orientation: orientation,
-              duration: duration,
-            ),
+            gameSettings: gameSettings,
           ),
         ),
       );
@@ -40,7 +69,7 @@ class StartButton extends StatelessWidget {
         width: double.infinity,
         child: RaisedButton.icon(
           splashColor: Colors.transparent,
-          color: Colors.blue[100],
+          color: Colors.brown[100],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),

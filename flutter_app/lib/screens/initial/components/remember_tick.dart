@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/utils/constants.dart';
 
 class RememberTick extends StatefulWidget {
   final bool remember;
@@ -16,7 +17,7 @@ class _RememberTickState extends State<RememberTick> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 20),
+      padding: SEPARATOR_PADDING,
       child: GestureDetector(
         onTap: () => widget.setRemember(!widget.remember),
         child: Row(

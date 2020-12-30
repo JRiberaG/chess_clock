@@ -1,13 +1,19 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app/models/game_settings.dart';
 import 'package:flutter_app/models/player_settings.dart';
 import 'package:flutter_app/screens/initial/components/duration_row.dart';
 import 'package:flutter_app/screens/initial/components/header.dart';
 import 'package:flutter_app/screens/initial/components/orientation_row.dart';
+import 'package:flutter_app/screens/initial/components/player_data_row.dart';
 import 'package:flutter_app/screens/initial/components/remember_tick.dart';
 import 'package:flutter_app/screens/initial/components/start_button.dart';
+import 'package:flutter_app/utils/preference_keys.dart';
 import 'package:flutter_app/utils/screen_size.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const String _TAG = 'InitialScreen';
 
@@ -21,10 +27,13 @@ class InitialScreen extends StatefulWidget {
 }
 
 class _InitialScreenState extends State<InitialScreen> {
-  Duration durationSelected = Duration(seconds: 0);
+  SharedPreferences _preferences;
+  Duration durationSelected = Duration(seconds: 120);
   int orientationSelected = LEFT;
-  bool remember = true;
+  bool remember = false;
   List<PlayerSettings> playerSettings;
+
+  bool _loaded = false;
 
   _updateDuration(duration) {
     setState(() {
@@ -42,14 +51,45 @@ class _InitialScreenState extends State<InitialScreen> {
     setState(() => remember = value);
   }
 
+  _updatePlayerSettings(value, index) {
+    setState(() => playerSettings[index] = value);
+  }
+
+  Future<void> _getPreferencesIfRequired() async {
+    _preferences = await SharedPreferences.getInstance();
+    bool prefRemember = _preferences.get(PreferenceKeys.saveChanges);
+    if (prefRemember != null && prefRemember) {
+      remember = true;
+      String gameSettingsJson = _preferences.get(PreferenceKeys.gameSettings);
+      if (gameSettingsJson != null) {
+        GameSettings gsFromPreferences =
+            GameSettings.fromMap(jsonDecode(gameSettingsJson));
+
+        if (gsFromPreferences != null) {
+          print(
+              'GameSettings retrieved from preferences: ${jsonEncode(gsFromPreferences.toMap())}');
+          durationSelected = gsFromPreferences.duration;
+          orientationSelected = gsFromPreferences.orientation;
+          playerSettings = gsFromPreferences.playerSettings;
+        }
+      }
+      _loaded = true;
+    } else {
+      _loaded = true;
+    }
+  }
+
+  _init() async {
+    playerSettings = List();
+    playerSettings.add(PlayerSettings(colorHex: 0xFF8D6E63));
+    playerSettings.add(PlayerSettings(colorHex: 0xFFFFA726));
+    await _getPreferencesIfRequired();
+    setState(() {});
+  }
+
   @override
   void initState() {
-    // TODO: 12/29/20  check if user has saved preferences and read them. If not, set it to the default values.
-    playerSettings = List();
-    playerSettings
-        .add(PlayerSettings(name: 'Player 1', color: Colors.brown[300]));
-    playerSettings
-        .add(PlayerSettings(name: 'Player 2', color: Colors.orange[400]));
+    _init();
     super.initState();
   }
 
@@ -57,94 +97,47 @@ class _InitialScreenState extends State<InitialScreen> {
   Widget build(BuildContext context) {
     ScreenSize().init(context);
 
-    // Forces to display the app only in Portrait mode.
+    // Forces the device to display the app in Portrait mode.
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Header(),
-              SizedBox(height: ScreenSize.h / 25),
-              PlayerDataRow(playerData: playerSettings),
-              DurationRow(
-                duration: durationSelected,
-                setDuration: _updateDuration,
+      body: _loaded == true
+          ? SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Header(),
+                    PlayerDataRow(
+                      playerData: playerSettings,
+                      updatePlayersSettings: _updatePlayerSettings,
+                    ),
+                    DurationRow(
+                      duration: durationSelected,
+                      setDuration: _updateDuration,
+                    ),
+                    OrientationRow(
+                        duration: durationSelected,
+                        orientation: orientationSelected,
+                        setOrientation: _updateOrientation),
+                    RememberTick(
+                      remember: remember,
+                      setRemember: _updateRemember,
+                    ),
+                    StartButton(
+                      orientation: orientationSelected,
+                      duration: durationSelected,
+                      remember: remember,
+                      playersSettings: playerSettings,
+                    ),
+                  ],
+                ),
               ),
-              OrientationRow(
-                  duration: durationSelected,
-                  orientation: orientationSelected,
-                  setOrientation: _updateOrientation),
-              RememberTick(
-                remember: remember,
-                setRemember: _updateRemember,
-              ),
-              StartButton(
-                orientation: orientationSelected,
-                duration: durationSelected,
-                remember: remember,
-                playersSettings: playerSettings,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class PlayerData extends StatefulWidget {
-  final PlayerSettings settings;
-
-  const PlayerData({Key key, this.settings}) : super(key: key);
-
-  @override
-  _PlayerDataState createState() => _PlayerDataState();
-}
-
-class _PlayerDataState extends State<PlayerData> {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text('${widget.settings.name ?? ''}'),
-        Container(
-          width: ScreenSize.h / 15,
-          height: ScreenSize.h / 15,
-          color: widget.settings.color ?? Colors.blue[100],
-        )
-      ],
-    );
-  }
-}
-
-class PlayerDataRow extends StatefulWidget {
-  final List<PlayerSettings> playerData;
-
-  const PlayerDataRow({Key key, this.playerData}) : super(key: key);
-
-  @override
-  _PlayerDataRowState createState() => _PlayerDataRowState();
-}
-
-class _PlayerDataRowState extends State<PlayerDataRow> {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        PlayerData(
-          settings: widget.playerData[0],
-        ),
-        PlayerData(
-          settings: widget.playerData[1],
-        ),
-      ],
+            )
+          : Center(child: CircularProgressIndicator()),
     );
   }
 }

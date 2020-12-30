@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/screens/initial/header_field.dart';
+import 'package:flutter_app/models/game_settings.dart';
+import 'package:flutter_app/screens/initial/components/header_field.dart';
+import 'package:flutter_app/utils/constants.dart';
 import 'package:flutter_app/utils/screen_size.dart';
 import 'package:flutter_app/utils/utils.dart';
-
-const LEFT = 0;
-const RIGHT = 1;
 
 class OrientationRow extends StatefulWidget {
   final Duration duration;
@@ -22,43 +21,52 @@ class OrientationRow extends StatefulWidget {
 class _OrientationRowState extends State<OrientationRow> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        HeaderField(title: 'Orientation'),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            GestureDetector(
-              onTap: () => widget.setOrientation(LEFT),
-              child: Column(
-                children: [
-                  OrientationFigure(
-                      duration: widget.duration, orientation: LEFT),
-                  Radio(
-                    value: LEFT,
-                    groupValue: widget.orientation,
-                    onChanged: (value) {},
-                  )
-                ],
+    return Padding(
+      padding: SEPARATOR_PADDING,
+      child: Column(
+        children: [
+          HeaderField(title: 'Orientation'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              GestureDetector(
+                onTap: () => widget.setOrientation(LEFT),
+                child: Column(
+                  children: [
+                    OrientationFigure(
+                      duration: widget.duration,
+                      orientation: LEFT,
+                      selected: widget.orientation == LEFT,
+                    ),
+                    Radio(
+                      value: LEFT,
+                      groupValue: widget.orientation,
+                      onChanged: (value) {},
+                    )
+                  ],
+                ),
               ),
-            ),
-            GestureDetector(
-              onTap: () => widget.setOrientation(RIGHT),
-              child: Column(
-                children: [
-                  OrientationFigure(
-                      duration: widget.duration, orientation: RIGHT),
-                  Radio(
-                    value: RIGHT,
-                    groupValue: widget.orientation,
-                    onChanged: (value) {},
-                  )
-                ],
+              GestureDetector(
+                onTap: () => widget.setOrientation(RIGHT),
+                child: Column(
+                  children: [
+                    OrientationFigure(
+                      duration: widget.duration,
+                      orientation: RIGHT,
+                      selected: widget.orientation == RIGHT,
+                    ),
+                    Radio(
+                      value: RIGHT,
+                      groupValue: widget.orientation,
+                      onChanged: (value) {},
+                    )
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -66,8 +74,10 @@ class _OrientationRowState extends State<OrientationRow> {
 class OrientationFigure extends StatelessWidget {
   final int orientation;
   final Duration duration;
+  final bool selected;
 
-  const OrientationFigure({Key key, this.orientation, this.duration})
+  const OrientationFigure(
+      {Key key, this.orientation, this.duration, this.selected})
       : super(key: key);
 
   @override
@@ -77,7 +87,7 @@ class OrientationFigure extends StatelessWidget {
       height: ScreenSize.h / 3.5,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: orientation == LEFT ? Colors.blue[100] : Colors.green[100],
+        color: selected ? Colors.brown[100] : Color(0xFFE7DEDA),
       ),
       child: Column(
         children: [
@@ -125,7 +135,7 @@ class OrientationFigure extends StatelessWidget {
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );

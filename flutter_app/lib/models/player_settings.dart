@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
-
 class PlayerSettings {
   String name;
-  Color color;
+  int colorHex;
 
-  PlayerSettings({this.name, this.color});
+  PlayerSettings({this.name, this.colorHex});
 }

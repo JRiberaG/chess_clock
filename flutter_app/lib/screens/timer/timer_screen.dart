@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/game_settings.dart';
+import 'package:flutter_app/screens/timer/components/dialog_buttons.dart';
 import 'package:flutter_app/screens/timer/components/player_section.dart';
 
 import 'components/separator.dart';
@@ -31,6 +33,8 @@ class _TimerScreenState extends State<TimerScreen> {
   // Seconds left of each player
   int secsBot;
   int secsTop;
+
+  // int _lastPlayerOn = NONE;
 
   @override
   void initState() {
@@ -133,33 +137,81 @@ class _TimerScreenState extends State<TimerScreen> {
     super.dispose();
   }
 
-  // bool isPressed;
-  // int secondsPassed = 0;
+  // _pause() {
+  //   print('Pausing');
+  //   _lastPlayerOn = isTopActive ? TOP : isBotActive ? BOT : NONE;
+  //
+  //   isTopActive = false;
+  //   isBotActive = false;
+  // }
+
+  // _resume() {
+  //   print('Resuming');
+  //   _lastPlayerOn = isTopActive ? TOP : isBotActive ? BOT : NONE;
+  //
+  //   if (_lastPlayerOn == TOP) {
+  //     isTopActive = true;
+  //   } else if (_lastPlayerOn == BOT) {
+  //     isBotActive = true;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
     _initTimersIfNeeded();
 
+    _showDialog() {
+      var top = 0;
+      var bot = 1;
+      var none = -1;
+
+      var whichClockWasRunning = isTopActive ? top : isBotActive ? bot : none;
+
+      isTopActive = false;
+      isBotActive = false;
+
+      _resumeDialog() {
+        if (whichClockWasRunning == top) {
+          isTopActive = true;
+        } else if (whichClockWasRunning == bot) {
+          isBotActive = true;
+        }
+        Navigator.pop(context);
+      }
+
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text('Pause', style: TextStyle(fontSize: 22)),
+          content: Column(
+            children: [
+              Text(
+                'Both clocks are paused.',
+                style: TextStyle(fontSize: 18),
+              )
+            ],
+          ),
+          actions: [
+            RestartButton(fun: _restart),
+            ChangeSettingsButton(),
+            ResumeButton(fun: _resumeDialog),
+          ],
+        ),
+      );
+    }
+
     return GestureDetector(
-      // onLongPressStart: (_) async {
-      //   isPressed = true;
-      //   do {
-      //     print('Long pressing');
-      //     await Future.delayed(Duration(milliseconds: 500));
-      //     secondsPassed++;
-      //   } while (isPressed);
+      onLongPress: () => _showDialog(),
+      // if (_isPaused) {
+      //   print('Is paused -> showing dialog');
+      //   _showDialog();
+      // } else {
+      //   print('Not paused -> pausing it');
+      //   _pause();
+      // }
+      // _restart();
       // },
-      // onLongPressEnd: (_) => setState(() {
-      //   print('Seconds passed: $secondsPassed');
-      //   if (secondsPassed >= 2) {
-      //     _restart();
-      //   }
-      //   isPressed = false;
-      //   secondsPassed = 0;
-      // }),
-      onLongPress: () {
-        _restart();
-      },
       child: Scaffold(
         body: Column(
           children: [
@@ -168,7 +220,7 @@ class _TimerScreenState extends State<TimerScreen> {
               isActive: !_hasStarted() ? true : isTopActive,
               seconds: secsTop,
               gameSettings: widget.gameSettings,
-              playerOne: false,
+              isPlayerOne: false,
             ),
             Separator(),
             PlayerSection(
@@ -176,7 +228,7 @@ class _TimerScreenState extends State<TimerScreen> {
               isActive: !_hasStarted() ? true : isBotActive,
               seconds: secsBot,
               gameSettings: widget.gameSettings,
-              playerOne: true,
+              isPlayerOne: true,
             ),
           ],
         ),
