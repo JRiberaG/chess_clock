@@ -1,38 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/models/player_settings.dart';
+import 'package:flutter_app/models/providers/game_settings_provider.dart';
+import 'package:flutter_app/utils/constants.dart';
 import 'package:flutter_app/utils/screen_size.dart';
+import 'package:provider/provider.dart';
 
-class PlayerData extends StatefulWidget {
-  final PlayerSettings settings;
-  final bool isPlayer1;
+class PlayerData extends StatelessWidget {
+  final bool isPlayerOne;
 
-  const PlayerData({
-    this.settings,
-    this.isPlayer1,
-  });
-
-  @override
-  _PlayerDataState createState() => _PlayerDataState();
-}
-
-class _PlayerDataState extends State<PlayerData> {
-  @override
-  void dispose() {
-    super.dispose();
-  }
+  const PlayerData({this.isPlayerOne});
 
   @override
   Widget build(BuildContext context) {
-    var name = widget.settings.name;
+    final provider = Provider.of<GameSettingsProvider>(context);
+
+    int index = isPlayerOne ? 0 : 1;
+
+    var name = provider.playerSettings[index].name;
     return Column(
       children: [
         name != null && name.isNotEmpty ? Text(name) : Container(),
-        // Text(
-        //   name != null && name.isNotEmpty
-        //       ? name
-        //       : widget.isPlayer1 ? 'Player 1' : 'Player 2',
-        //   style: TextStyle(fontSize: 20),
-        // ),
         Container(
           margin: EdgeInsets.only(top: 10),
           height: ScreenSize.w / 8,
@@ -40,7 +26,8 @@ class _PlayerDataState extends State<PlayerData> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(30),
             border: Border.all(color: Colors.grey[800], width: 0.35),
-            color: Color(widget.settings.colorHex),
+            color:
+                Color(provider.playerSettings[index].colorHex ?? DEFAULT_COLOR),
           ),
         ),
       ],

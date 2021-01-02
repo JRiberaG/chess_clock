@@ -1,26 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/game_settings.dart';
+import 'package:flutter_app/models/providers/game_settings_provider.dart';
 import 'package:flutter_app/screens/initial/components/header_field.dart';
 import 'package:flutter_app/utils/constants.dart';
 import 'package:flutter_app/utils/screen_size.dart';
 import 'package:flutter_app/utils/utils.dart';
+import 'package:provider/provider.dart';
 
-class OrientationRow extends StatefulWidget {
-  final Duration duration;
-  final int orientation;
-  final Function(int) setOrientation;
-
-  const OrientationRow(
-      {Key key, this.orientation, this.setOrientation, this.duration})
-      : super(key: key);
-
-  @override
-  _OrientationRowState createState() => _OrientationRowState();
-}
-
-class _OrientationRowState extends State<OrientationRow> {
+class OrientationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<GameSettingsProvider>(context);
+
     return Padding(
       padding: SEPARATOR_PADDING,
       child: Column(
@@ -30,34 +21,32 @@ class _OrientationRowState extends State<OrientationRow> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               GestureDetector(
-                onTap: () => widget.setOrientation(LEFT),
+                onTap: () => provider.orientation = LEFT,
                 child: Column(
                   children: [
                     OrientationFigure(
-                      duration: widget.duration,
                       orientation: LEFT,
-                      selected: widget.orientation == LEFT,
+                      selected: provider.orientation == LEFT,
                     ),
                     Radio(
                       value: LEFT,
-                      groupValue: widget.orientation,
+                      groupValue: provider.orientation,
                       onChanged: (value) {},
                     )
                   ],
                 ),
               ),
               GestureDetector(
-                onTap: () => widget.setOrientation(RIGHT),
+                onTap: () => provider.orientation = RIGHT,
                 child: Column(
                   children: [
                     OrientationFigure(
-                      duration: widget.duration,
                       orientation: RIGHT,
-                      selected: widget.orientation == RIGHT,
+                      selected: provider.orientation == RIGHT,
                     ),
                     Radio(
                       value: RIGHT,
-                      groupValue: widget.orientation,
+                      groupValue: provider.orientation,
                       onChanged: (value) {},
                     )
                   ],
@@ -72,16 +61,41 @@ class _OrientationRowState extends State<OrientationRow> {
 }
 
 class OrientationFigure extends StatelessWidget {
-  final int orientation;
-  final Duration duration;
   final bool selected;
+  final int orientation;
 
-  const OrientationFigure(
-      {Key key, this.orientation, this.duration, this.selected})
+  const OrientationFigure({Key key, this.orientation, this.selected})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<GameSettingsProvider>(context);
+
+    Expanded _getHalf() {
+      return Expanded(
+        flex: 50,
+        child: Container(
+          width: double.infinity,
+          child: RotatedBox(
+            quarterTurns: orientation == LEFT ? 3 : 1,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  formatDuration(provider.duration),
+                  style: TextStyle(
+                    fontSize: ScreenSize.h / 35,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
       width: ScreenSize.w / 3,
       height: ScreenSize.h / 3.5,
@@ -91,51 +105,9 @@ class OrientationFigure extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Expanded(
-            flex: 50,
-            child: Container(
-              width: double.infinity,
-              child: RotatedBox(
-                quarterTurns: orientation == LEFT ? 3 : 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      formatDuration(duration),
-                      style: TextStyle(
-                        fontSize: ScreenSize.h / 35,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          _getHalf(),
           Expanded(flex: 1, child: Container(color: Colors.white)),
-          Expanded(
-            flex: 50,
-            child: Container(
-              width: double.infinity,
-              child: RotatedBox(
-                quarterTurns: orientation == LEFT ? 3 : 1,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      formatDuration(duration),
-                      style: TextStyle(
-                        fontSize: ScreenSize.h / 35,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          _getHalf(),
         ],
       ),
     );

@@ -11,6 +11,9 @@ class Col {
   static final black = 0xFF212121;
 }
 
+/// Orange color
+const int DEFAULT_COLOR = 0xFFFFA726;
+
 buttonStyle() {
   return TextStyle(
     fontSize: 20,

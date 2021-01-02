@@ -2,25 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/models/player_settings.dart';
+import 'package:flutter_app/models/providers/game_settings_provider.dart';
 import 'package:flutter_app/screens/initial/components/header_field.dart';
 import 'package:flutter_app/screens/initial/components/player_data.dart';
 import 'package:flutter_app/utils/constants.dart';
 import 'package:flutter_app/utils/screen_size.dart';
+import 'package:provider/provider.dart';
 
-class PlayerDataRow extends StatefulWidget {
-  final List<PlayerSettings> playerData;
-  final Function(PlayerSettings, int) updatePlayersSettings;
-
-  const PlayerDataRow({Key key, this.playerData, this.updatePlayersSettings})
-      : super(key: key);
-
-  @override
-  _PlayerDataRowState createState() => _PlayerDataRowState();
-}
-
-class _PlayerDataRowState extends State<PlayerDataRow> {
+class PlayerDataRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<GameSettingsProvider>(context);
+
     _openBottomSheetModal(bool isPlayerOne) {
       TextEditingController _controllerText = TextEditingController();
 
@@ -28,6 +21,7 @@ class _PlayerDataRowState extends State<PlayerDataRow> {
       var light = 50;
       var strong = 300;
 
+      // region Other widgets
       _focusedBorder() {
         return OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
@@ -69,9 +63,10 @@ class _PlayerDataRowState extends State<PlayerDataRow> {
           suffixIcon: _suffixIcon(),
         );
       }
+      // endregion
 
-      var name =
-          isPlayerOne ? widget.playerData[0].name : widget.playerData[1].name;
+      int index = isPlayerOne ? 0 : 1;
+      String name = provider.playerSettings[index].name;
       if (name != null && name.isNotEmpty) _controllerText.text = name;
 
       List<int> colors = [
@@ -83,7 +78,7 @@ class _PlayerDataRowState extends State<PlayerDataRow> {
         Col.black,
       ];
 
-      int _selectedColor = widget.playerData[0].colorHex;
+      int _selectedColor = provider.playerSettings[index].colorHex;
 
       showModalBottomSheet(
         context: context,
@@ -152,6 +147,9 @@ class _PlayerDataRowState extends State<PlayerDataRow> {
           ),
         ),
       ).then((value) {
+        List<PlayerSettings> ps = provider.playerSettings;
+        var index = isPlayerOne ? 0 : 1;
+
         var nameP1;
         if (_controllerText.text != null && _controllerText.text.isNotEmpty) {
           nameP1 = _controllerText.text;
@@ -161,14 +159,14 @@ class _PlayerDataRowState extends State<PlayerDataRow> {
         if (_selectedColor != null) {
           colorP1 = _selectedColor;
         } else {
-          colorP1 = widget.playerData[0].colorHex;
+          colorP1 = ps[index].colorHex;
         }
 
         PlayerSettings updated =
             PlayerSettings(name: nameP1, colorHex: colorP1);
 
-        var index = isPlayerOne ? 0 : 1;
-        widget.updatePlayersSettings(updated, index);
+        ps[index] = updated;
+        provider.playerSettings = ps;
       });
     }
 
@@ -180,17 +178,11 @@ class _PlayerDataRowState extends State<PlayerDataRow> {
           children: [
             GestureDetector(
               onTap: () => _openBottomSheetModal(true),
-              child: PlayerData(
-                settings: widget.playerData[0],
-                isPlayer1: true,
-              ),
+              child: PlayerData(isPlayerOne: true),
             ),
             GestureDetector(
               onTap: () => _openBottomSheetModal(false),
-              child: PlayerData(
-                settings: widget.playerData[1],
-                isPlayer1: false,
-              ),
+              child: PlayerData(isPlayerOne: false),
             ),
           ],
         ),

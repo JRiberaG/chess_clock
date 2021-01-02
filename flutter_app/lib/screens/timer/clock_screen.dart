@@ -6,6 +6,7 @@ import 'package:flutter_app/models/game_settings.dart';
 import 'package:flutter_app/screens/initial/initial_screen.dart';
 import 'package:flutter_app/screens/timer/components/dialog_buttons.dart';
 import 'package:flutter_app/screens/timer/components/player_section.dart';
+import 'package:flutter_app/utils/constants.dart';
 
 import 'components/separator.dart';
 
@@ -14,31 +15,29 @@ const TOP = 0;
 const BOT = 1;
 const NONE = -1;
 
-class TimerScreen extends StatefulWidget {
+class ClockScreen extends StatefulWidget {
   static final routeName = '/timer_screen';
 
   final GameSettings gameSettings;
 
-  const TimerScreen({@required this.gameSettings});
+  const ClockScreen({@required this.gameSettings});
 
   @override
-  _TimerScreenState createState() => _TimerScreenState();
+  _ClockScreenState createState() => _ClockScreenState();
 }
 
-class _TimerScreenState extends State<TimerScreen> {
+class _ClockScreenState extends State<ClockScreen> {
   // Timers
   Timer timerTop;
   Timer timerBot;
 
   // Flags to decide which timer counts down
-  bool isBotActive;
   bool isTopActive;
+  bool isBotActive;
 
   // Seconds left of each player
-  int secsBot;
   int secsTop;
-
-  // int _lastPlayerOn = NONE;
+  int secsBot;
 
   @override
   void initState() {
@@ -67,12 +66,12 @@ class _TimerScreenState extends State<TimerScreen> {
 
   _initTimersIfNeeded() {
     if (timerTop == null) {
-      timerTop = Timer.periodic(Duration(seconds: 1), (timer) {
+      timerTop = Timer.periodic(Duration(seconds: 1), (_) {
         _handleTickLeft();
       });
     }
     if (timerBot == null) {
-      timerBot = Timer.periodic(Duration(seconds: 1), (timer) {
+      timerBot = Timer.periodic(Duration(seconds: 1), (_) {
         _handleTickRight();
       });
     }
@@ -84,7 +83,6 @@ class _TimerScreenState extends State<TimerScreen> {
         if (secsTop == 0) {
           timerTop.cancel();
           timerBot.cancel();
-          // TODO: 12/29/20 Display alarm, warning, toast or whatever
           _showDialogTimesOver(TOP);
         } else {
           secsTop = secsTop - 1;
@@ -99,7 +97,6 @@ class _TimerScreenState extends State<TimerScreen> {
         if (secsBot == 0) {
           timerTop.cancel();
           timerBot.cancel();
-          // TODO: 12/29/20 Display alarm, warning, toast or whatever
           _showDialogTimesOver(BOT);
         } else {
           secsBot = secsBot - 1;
@@ -138,24 +135,29 @@ class _TimerScreenState extends State<TimerScreen> {
 
   _showDialogTimesOver(int who) {
     String ff = 'SF';
-    String content = '';
+    String content = who == TOP
+        ? 'Player TOP ran out of time.'
+        : 'Player BOT ran out of time.';
 
     showCupertinoDialog(
         barrierDismissible: false,
         context: context,
         builder: (context) => CupertinoAlertDialog(
-              title: Text('Time is over'),
-              content: Text(content),
+              title: Text(
+                'Time is over',
+                style: TextStyle(fontSize: 22),
+              ),
+              content: Text(
+                content,
+                style: TextStyle(fontSize: 18),
+              ),
               actions: [
                 // RestartButton(fun: _restart),
                 // ChangeSettingsButton(),
                 FlatButton(
                   child: Text(
                     'Reset clocks',
-                    style: TextStyle(
-                      fontFamily: ff,
-                      fontSize: 18,
-                    ),
+                    style: buttonStyle(),
                   ),
                   highlightColor: Colors.transparent,
                   focusColor: Colors.transparent,
@@ -168,11 +170,7 @@ class _TimerScreenState extends State<TimerScreen> {
                 FlatButton(
                   child: Text(
                     'Change settings',
-                    style: TextStyle(
-                      fontFamily: ff,
-                      // color: Color(0xFFFF453A),
-                      fontSize: 18,
-                    ),
+                    style: buttonStyle(),
                   ),
                   highlightColor: Colors.transparent,
                   focusColor: Colors.transparent,

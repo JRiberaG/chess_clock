@@ -1,66 +1,53 @@
 import 'dart:convert' as Convert;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_app/models/game_settings.dart';
-import 'package:flutter_app/models/player_settings.dart';
-import 'package:flutter_app/screens/timer/timer_screen.dart';
+import 'package:flutter_app/models/providers/game_settings_provider.dart';
+import 'package:flutter_app/models/providers/remember_provider.dart';
+import 'package:flutter_app/screens/timer/clock_screen.dart';
 import 'package:flutter_app/utils/preference_keys.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StartButton extends StatelessWidget {
-  final int orientation;
-  final List<PlayerSettings> playersSettings;
-  final Duration duration;
-  final bool remember;
-
-  const StartButton(
-      {Key key,
-      this.orientation,
-      this.playersSettings,
-      this.duration,
-      this.remember})
-      : super(key: key);
-
-  void _savePrefs(GameSettings gameSettings) async {
-    var sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences
-        .setBool(PreferenceKeys.saveChanges, remember)
-        .then((value) => print('Remember flag was stored successfully.'))
-        .catchError((e) => print('Remember flag could not be stored: $e'));
-
-    if (remember) {
-      String json = Convert.jsonEncode(gameSettings.toMap());
-      sharedPreferences
-          .setString(PreferenceKeys.gameSettings, json)
-          .then((value) => print('Game settings were stored successfully.'))
-          .catchError((e) => print('Game settings could not be stored: $e'));
-    } else {
-      sharedPreferences
-          .remove(PreferenceKeys.gameSettings)
-          .catchError((e) => print('Game settings could not be removed: $e'));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    void _openTimerScreen() {
-      GameSettings gameSettings = GameSettings(
-        playerSettings: playersSettings,
-        orientation: orientation,
-        duration: duration,
-      );
+    final providerGameSettings = Provider.of<GameSettingsProvider>(context);
+    final providerRemember = Provider.of<RememberProvider>(context);
 
-      _savePrefs(gameSettings);
+    void _savePrefs() async {
+      var sharedPreferences = await SharedPreferences.getInstance();
+      sharedPreferences
+          .setBool(PreferenceKeys.saveChanges, providerRemember.remember)
+          .then((value) => print('Remember flag was stored successfully.'))
+          .catchError((e) => print('Remember flag could not be stored: $e'));
+
+      if (providerRemember.remember) {
+        String json =
+            Convert.jsonEncode(providerGameSettings.gameSettings.toMap());
+        sharedPreferences
+            .setString(PreferenceKeys.gameSettings, json)
+            .then((value) => print('Game settings were stored successfully.'))
+            .catchError((e) => print('Game settings could not be stored: $e'));
+      } else {
+        sharedPreferences
+            .remove(PreferenceKeys.gameSettings)
+            .catchError((e) => print('Game settings could not be removed: $e'));
+      }
+    }
+
+    void _openTimerScreen() {
+      _savePrefs();
 
       Navigator.pop(context);
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => TimerScreen(
-            gameSettings: gameSettings,
+          builder: (context) => ClockScreen(
+            gameSettings: providerGameSettings.gameSettings,
           ),
         ),
       );
+      // Navigator.popAndPushNamed(context, ClockScreen.routeName);
     }
 
     return Center(

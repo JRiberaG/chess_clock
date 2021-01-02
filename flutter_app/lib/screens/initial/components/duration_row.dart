@@ -1,22 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/models/providers/game_settings_provider.dart';
 import 'package:flutter_app/screens/initial/components/header_field.dart';
 import 'package:flutter_app/utils/constants.dart';
 import 'package:flutter_app/utils/screen_size.dart';
 import 'package:flutter_app/utils/utils.dart';
+import 'package:provider/provider.dart';
 
-class DurationRow extends StatefulWidget {
-  final Duration duration;
-  final Function(Duration) setDuration;
-
-  const DurationRow({Key key, this.duration, this.setDuration})
-      : super(key: key);
-
-  @override
-  _DurationRowState createState() => _DurationRowState();
-}
-
-class _DurationRowState extends State<DurationRow> {
+// ignore: must_be_immutable
+class DurationRow extends StatelessWidget {
   List<String> options = List();
   List<Duration> durations = [
     Duration(minutes: 2),
@@ -27,7 +19,9 @@ class _DurationRowState extends State<DurationRow> {
 
   @override
   Widget build(BuildContext context) {
-    _fillOptionsList();
+    final gameSettings = Provider.of<GameSettingsProvider>(context);
+
+    _setToggleOptions(gameSettings);
 
     return Padding(
       padding: SEPARATOR_PADDING,
@@ -54,8 +48,11 @@ class _DurationRowState extends State<DurationRow> {
                 selectedBorderColor: Colors.brown[300],
                 selectedColor: Colors.black,
                 splashColor: Colors.transparent,
-                isSelected: _getSelectedList(),
-                onPressed: (index) => _setDuration(index),
+                isSelected: _getToggleSelected(gameSettings),
+                onPressed: (index) => index == durations.length
+                    ? _showBottomSheet(context,
+                        gameSettings) // Custom pressed -> shows time picker
+                    : gameSettings.duration = durations[index],
                 borderRadius: BorderRadius.circular(10),
               )
             ],
@@ -65,8 +62,8 @@ class _DurationRowState extends State<DurationRow> {
     );
   }
 
-  void _showBottomSheet(BuildContext context, Duration durationSelected) {
-    Duration newDuration = durationSelected;
+  void _showBottomSheet(BuildContext context, GameSettingsProvider provider) {
+    Duration newDuration = provider.duration;
 
     showModalBottomSheet(
         context: context,
@@ -74,67 +71,52 @@ class _DurationRowState extends State<DurationRow> {
               height: ScreenSize.h / 3,
               child: CupertinoTimerPicker(
                 mode: CupertinoTimerPickerMode.hms,
-                initialTimerDuration: durationSelected,
+                initialTimerDuration: provider.duration,
                 onTimerDurationChanged: (duration) => newDuration = duration,
               ),
-            )).whenComplete(() => widget.setDuration(newDuration));
+            )).whenComplete(() => provider.duration = newDuration);
   }
 
-  List<bool> _getSelectedList() {
+  List<bool> _getToggleSelected(GameSettingsProvider provider) {
     List<bool> list = List();
-    int minutes = widget.duration.inMinutes;
 
-    switch (minutes) {
-      case 2:
-        list = [true, false, false, false, false];
-        break;
-      case 5:
-        list = [false, true, false, false, false];
-        break;
-      case 30:
-        list = [false, false, true, false, false];
-        break;
-      case 90:
-        list = [false, false, false, true, false];
-        break;
-      default:
-        list = [false, false, false, false, true];
-        break;
+    int seconds = provider.duration.inSeconds;
+
+    for (int i = 0; i < durations.length + 1; i++) {
+      int indexSelected;
+      switch (seconds) {
+        case 2 * 60:
+          indexSelected = 0;
+          break;
+        case 5 * 60:
+          indexSelected = 1;
+          break;
+        case 30 * 60:
+          indexSelected = 2;
+          break;
+        case 90 * 60:
+          indexSelected = 3;
+          break;
+        default:
+          indexSelected = 4;
+          break;
+      }
+
+      list.add(indexSelected == i ? true : false);
     }
 
     return list;
   }
 
-  _setDuration(int index) {
-    if (index == 4) {
-      _showBottomSheet(context, widget.duration);
-    } else {
-      Duration duration;
-      switch (index) {
-        case 0:
-          duration = durations[0];
-          break;
-        case 1:
-          duration = durations[1];
-          break;
-        case 2:
-          duration = durations[2];
-          break;
-        default:
-          duration = durations[3];
-          break;
-      }
-
-      widget.setDuration(duration);
-    }
-  }
-
-  _fillOptionsList() {
+  _setToggleOptions(GameSettingsProvider provider) {
     options = List();
     for (var item in durations) options.add(formatDuration(item));
-    int min = widget.duration.inMinutes;
-    if (min != 2 && min != 5 && min != 30 && min != 90) {
-      options.add(formatDuration(widget.duration));
+    int secs = provider.duration.inSeconds;
+    if (secs != 2 * 60 &&
+        secs != 5 * 60 &&
+        secs != 30 * 60 &&
+        secs != 90 * 60) {
+      options.add(formatDuration(provider.duration));
     } else {
       options.add('Custom');
     }
