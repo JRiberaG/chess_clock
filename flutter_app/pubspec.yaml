@@ -24,7 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   shared_preferences: ^0.5.12+4
-#  json_serializable: ^3.5.1
+  google_fonts: ^1.1.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -73,6 +73,22 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
+  fonts:
+    - family: SF_Pro
+      fonts:
+        - asset: fonts/SF_Pro_Display-Regular.ttf
+    - family: SF
+      fonts:
+        - asset: fonts/SFUIDisplay_Medium.otf
+          weight: 500
+        - asset: fonts/SFUIDisplay_Regular.otf
+          weight: 400
+        - asset: fonts/SFUIDisplay_Light.ttf
+          weight: 300
+        - asset: fonts/SFUIDisplay_Thin.otf
+          weight: 200
+        - asset: fonts/SFUIDisplay_Ultralight.otf
+          weight: 100
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

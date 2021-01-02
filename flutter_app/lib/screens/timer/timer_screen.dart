@@ -3,12 +3,16 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/game_settings.dart';
+import 'package:flutter_app/screens/initial/initial_screen.dart';
 import 'package:flutter_app/screens/timer/components/dialog_buttons.dart';
 import 'package:flutter_app/screens/timer/components/player_section.dart';
 
 import 'components/separator.dart';
 
 const String _TAG = 'TimerScreen';
+const TOP = 0;
+const BOT = 1;
+const NONE = -1;
 
 class TimerScreen extends StatefulWidget {
   static final routeName = '/timer_screen';
@@ -81,6 +85,7 @@ class _TimerScreenState extends State<TimerScreen> {
           timerTop.cancel();
           timerBot.cancel();
           // TODO: 12/29/20 Display alarm, warning, toast or whatever
+          _showDialogTimesOver(TOP);
         } else {
           secsTop = secsTop - 1;
         }
@@ -95,6 +100,7 @@ class _TimerScreenState extends State<TimerScreen> {
           timerTop.cancel();
           timerBot.cancel();
           // TODO: 12/29/20 Display alarm, warning, toast or whatever
+          _showDialogTimesOver(BOT);
         } else {
           secsBot = secsBot - 1;
         }
@@ -130,6 +136,56 @@ class _TimerScreenState extends State<TimerScreen> {
     _init();
   }
 
+  _showDialogTimesOver(int who) {
+    String ff = 'SF';
+    String content = '';
+
+    showCupertinoDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+              title: Text('Time is over'),
+              content: Text(content),
+              actions: [
+                // RestartButton(fun: _restart),
+                // ChangeSettingsButton(),
+                FlatButton(
+                  child: Text(
+                    'Reset clocks',
+                    style: TextStyle(
+                      fontFamily: ff,
+                      fontSize: 18,
+                    ),
+                  ),
+                  highlightColor: Colors.transparent,
+                  focusColor: Colors.transparent,
+                  splashColor: Colors.transparent,
+                  onPressed: () {
+                    _restart();
+                    Navigator.pop(context);
+                  },
+                ),
+                FlatButton(
+                  child: Text(
+                    'Change settings',
+                    style: TextStyle(
+                      fontFamily: ff,
+                      // color: Color(0xFFFF453A),
+                      fontSize: 18,
+                    ),
+                  ),
+                  highlightColor: Colors.transparent,
+                  focusColor: Colors.transparent,
+                  splashColor: Colors.transparent,
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.popAndPushNamed(context, InitialScreen.routeName);
+                  },
+                ),
+              ],
+            ));
+  }
+
   @override
   void dispose() {
     if (timerTop != null) timerTop.cancel();
@@ -137,43 +193,20 @@ class _TimerScreenState extends State<TimerScreen> {
     super.dispose();
   }
 
-  // _pause() {
-  //   print('Pausing');
-  //   _lastPlayerOn = isTopActive ? TOP : isBotActive ? BOT : NONE;
-  //
-  //   isTopActive = false;
-  //   isBotActive = false;
-  // }
-
-  // _resume() {
-  //   print('Resuming');
-  //   _lastPlayerOn = isTopActive ? TOP : isBotActive ? BOT : NONE;
-  //
-  //   if (_lastPlayerOn == TOP) {
-  //     isTopActive = true;
-  //   } else if (_lastPlayerOn == BOT) {
-  //     isBotActive = true;
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     _initTimersIfNeeded();
 
-    _showDialog() {
-      var top = 0;
-      var bot = 1;
-      var none = -1;
-
-      var whichClockWasRunning = isTopActive ? top : isBotActive ? bot : none;
+    _showDialogOptions() {
+      var whichClockWasRunning = isTopActive ? TOP : isBotActive ? BOT : NONE;
 
       isTopActive = false;
       isBotActive = false;
 
       _resumeDialog() {
-        if (whichClockWasRunning == top) {
+        if (whichClockWasRunning == TOP) {
           isTopActive = true;
-        } else if (whichClockWasRunning == bot) {
+        } else if (whichClockWasRunning == BOT) {
           isBotActive = true;
         }
         Navigator.pop(context);
@@ -183,14 +216,23 @@ class _TimerScreenState extends State<TimerScreen> {
         barrierDismissible: false,
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text('Pause', style: TextStyle(fontSize: 22)),
-          content: Column(
-            children: [
-              Text(
-                'Both clocks are paused.',
-                style: TextStyle(fontSize: 18),
-              )
-            ],
+          title: Text(
+            'Pause',
+            // style: GoogleFonts.karla(fontSize: 22),
+            style: TextStyle(
+              fontSize: 22,
+              // fontFamily: 'SF_Pro'),
+            ),
+          ),
+          // TextStyle(fontSize: 22)),
+          content: Text(
+            'Both clocks are paused.',
+            style: TextStyle(
+              fontSize: 18,
+              // fontFamily: 'SF_Pro'),
+              // style: GoogleFonts.ubuntu(fontSize: 18),
+              // TextStyle(fontSize: 18),
+            ),
           ),
           actions: [
             RestartButton(fun: _restart),
@@ -201,36 +243,93 @@ class _TimerScreenState extends State<TimerScreen> {
       );
     }
 
-    return GestureDetector(
-      onLongPress: () => _showDialog(),
-      // if (_isPaused) {
-      //   print('Is paused -> showing dialog');
-      //   _showDialog();
-      // } else {
-      //   print('Not paused -> pausing it');
-      //   _pause();
-      // }
-      // _restart();
-      // },
-      child: Scaffold(
-        body: Column(
-          children: [
-            PlayerSection(
-              fun: _triggerPlayerTop,
-              isActive: !_hasStarted() ? true : isTopActive,
-              seconds: secsTop,
-              gameSettings: widget.gameSettings,
-              isPlayerOne: false,
+    Future<bool> _onWillPop() async {
+      String ff = 'SF';
+
+      return (await showCupertinoDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (context) => CupertinoAlertDialog(
+              title: Text(
+                'Confirmation',
+                style: TextStyle(
+                  fontFamily: ff,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 5,
+                  vertical: 10,
+                ),
+                child: Text(
+                  'Do you want to exit the app?',
+                  style: TextStyle(
+                    fontFamily: ff,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+              actions: [
+                FlatButton(
+                  child: Text(
+                    'No',
+                    style: TextStyle(
+                      fontFamily: ff,
+                      fontSize: 18,
+                    ),
+                  ),
+                  highlightColor: Colors.transparent,
+                  focusColor: Colors.transparent,
+                  splashColor: Colors.transparent,
+                  onPressed: () => Navigator.pop(context, false),
+                ),
+                FlatButton(
+                  child: Text(
+                    'Yes',
+                    style: TextStyle(
+                      fontFamily: ff,
+                      color: Color(0xFFFF453A),
+                      fontSize: 18,
+                    ),
+                  ),
+                  highlightColor: Colors.transparent,
+                  focusColor: Colors.transparent,
+                  splashColor: Colors.transparent,
+                  onPressed: () => Navigator.of(context).pop(true),
+                )
+              ],
             ),
-            Separator(),
-            PlayerSection(
-              fun: _triggerPlayerBot,
-              isActive: !_hasStarted() ? true : isBotActive,
-              seconds: secsBot,
-              gameSettings: widget.gameSettings,
-              isPlayerOne: true,
-            ),
-          ],
+          )) ??
+          false;
+    }
+
+    return WillPopScope(
+      // Handles onBackPressed
+      onWillPop: () => _onWillPop(),
+      child: GestureDetector(
+        onLongPress: () => _showDialogOptions(),
+        child: Scaffold(
+          body: Column(
+            children: [
+              PlayerSection(
+                fun: _triggerPlayerTop,
+                isActive: !_hasStarted() ? true : isTopActive,
+                seconds: secsTop,
+                gameSettings: widget.gameSettings,
+                isPlayerOne: false,
+              ),
+              Separator(),
+              PlayerSection(
+                fun: _triggerPlayerBot,
+                isActive: !_hasStarted() ? true : isBotActive,
+                seconds: secsBot,
+                gameSettings: widget.gameSettings,
+                isPlayerOne: true,
+              ),
+            ],
+          ),
         ),
       ),
     );

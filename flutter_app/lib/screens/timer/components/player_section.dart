@@ -7,6 +7,7 @@ import 'package:flutter_app/utils/utils.dart';
 const BACKGROUND = 0;
 const ICON = 1;
 const TEXT = 2;
+const NAME = 3;
 
 class PlayerSection extends StatefulWidget {
   final Function fun;
@@ -59,7 +60,7 @@ class _PlayerSectionState extends State<PlayerSection> {
       // The color requested is for either the Icon or the Text -> if the background
       // color is dark, returns a bright color, otherwise returns the opposite
       if (backgroundColor != Col.black) {
-        return Col.black;
+        return what == NAME ? 0xFF212121 : Col.black;
       } else {
         return 0xFFf5f5f5;
       }
@@ -107,7 +108,7 @@ class _PlayerSectionState extends State<PlayerSection> {
                     style: TextStyle(
                       fontSize: ScreenSize.h / 20,
                       fontWeight: FontWeight.w200,
-                      color: Colors.grey[900],
+                      color: Color(_getColor(NAME)),
                     ),
                   )
                 ],

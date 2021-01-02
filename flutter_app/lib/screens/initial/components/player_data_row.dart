@@ -112,6 +112,7 @@ class _PlayerDataRowState extends State<PlayerDataRow> {
                         child: TextField(
                           controller: _controllerText,
                           keyboardType: TextInputType.name,
+                          textCapitalization: TextCapitalization.words,
                           maxLines: 1,
                           decoration: _inputDecoration(),
                           inputFormatters: [
