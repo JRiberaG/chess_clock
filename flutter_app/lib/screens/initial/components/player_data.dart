@@ -18,7 +18,9 @@ class PlayerData extends StatelessWidget {
     var name = provider.playerSettings[index].name;
     return Column(
       children: [
-        name != null && name.isNotEmpty ? Text(name) : Container(),
+        name != null && name.isNotEmpty
+            ? Text(name, style: TextStyle(fontSize: 18, color: Colors.white))
+            : Container(),
         Container(
           margin: EdgeInsets.only(top: 10),
           height: ScreenSize.w / 8,

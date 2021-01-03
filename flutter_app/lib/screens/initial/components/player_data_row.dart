@@ -9,7 +9,7 @@ import 'package:flutter_app/utils/constants.dart';
 import 'package:flutter_app/utils/screen_size.dart';
 import 'package:provider/provider.dart';
 
-class PlayerDataRow extends StatelessWidget {
+class PlayersRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<GameSettingsProvider>(context);

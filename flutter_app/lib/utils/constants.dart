@@ -9,12 +9,13 @@ class Col {
   static final brown = 0xFFbcaaa4;
   static final white = 0xFFfafafa;
   static final black = 0xFF212121;
+  static final selected = Colors.brown[200];
 }
 
 /// Orange color
 const int DEFAULT_COLOR = 0xFFFFA726;
 
-buttonStyle() {
+TextStyle buttonStyle() {
   return TextStyle(
     fontSize: 20,
   );

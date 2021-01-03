@@ -31,29 +31,41 @@ class DurationRow extends StatelessWidget {
           Column(
             children: [
               HeaderField(title: 'Duration'),
-              ToggleButtons(
-                children: [
-                  for (var item in options)
-                    SizedBox(
-                      width: ScreenSize.w / 6.5,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        child: Text(item, textAlign: TextAlign.center),
-                      ),
-                    )
-                ],
-                fillColor: Colors.brown[100],
-                color: Colors.grey[600],
-                borderColor: Colors.brown[200],
-                selectedBorderColor: Colors.brown[300],
-                selectedColor: Colors.black,
-                splashColor: Colors.transparent,
-                isSelected: _getToggleSelected(gameSettings),
-                onPressed: (index) => index == durations.length
-                    ? _showBottomSheet(context,
-                        gameSettings) // Custom pressed -> shows time picker
-                    : gameSettings.duration = durations[index],
-                borderRadius: BorderRadius.circular(10),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.black
+                      .withOpacity(0.5), // Background color (unselected)
+                ),
+                child: ToggleButtons(
+                  children: [
+                    for (var item in options)
+                      SizedBox(
+                        width: ScreenSize.w / 6.5,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          child: Text(item, textAlign: TextAlign.center),
+                        ),
+                      )
+                  ],
+                  // Text: unselected
+                  color: Colors.grey[100],
+                  // Border: unselected
+                  borderColor: Colors.brown[200],
+                  // Background: selected
+                  fillColor: Colors.brown[100],
+                  // Border: selected
+                  selectedBorderColor: Colors.brown[300],
+                  // Text: selected
+                  selectedColor: Colors.black,
+                  splashColor: Colors.transparent,
+                  isSelected: _getToggleSelected(gameSettings),
+                  onPressed: (index) => index == durations.length
+                      ? _showBottomSheet(context,
+                          gameSettings) // Custom pressed -> shows time picker
+                      : gameSettings.duration = durations[index],
+                  borderRadius: BorderRadius.circular(10),
+                ),
               )
             ],
           ),

@@ -31,7 +31,8 @@ class OrientationRow extends StatelessWidget {
                     Radio(
                       value: LEFT,
                       groupValue: provider.orientation,
-                      onChanged: (value) {},
+                      onChanged: (value) => provider.orientation = LEFT,
+                      activeColor: Col.selected,
                     )
                   ],
                 ),
@@ -47,7 +48,8 @@ class OrientationRow extends StatelessWidget {
                     Radio(
                       value: RIGHT,
                       groupValue: provider.orientation,
-                      onChanged: (value) {},
+                      onChanged: (value) => provider.orientation = RIGHT,
+                      activeColor: Col.selected,
                     )
                   ],
                 ),
@@ -101,7 +103,7 @@ class OrientationFigure extends StatelessWidget {
       height: ScreenSize.h / 3.5,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: selected ? Colors.brown[100] : Color(0xFFE7DEDA),
+        color: selected ? Color(0xFFc9beb9) : Color(0xFFE7DEDA),
       ),
       child: Column(
         children: [

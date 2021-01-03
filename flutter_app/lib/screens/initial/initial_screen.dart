@@ -72,24 +72,37 @@ class InitialScreen extends StatelessWidget {
 
     if (provider.gameSettings == null) _getPreferencesIfRequired();
 
-    return Scaffold(
-      body: provider.gameSettings != null
-          ? SafeArea(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Header(),
-                    PlayerDataRow(),
-                    DurationRow(),
-                    OrientationRow(),
-                    RememberTick(),
-                    StartButton(),
-                  ],
+    return Container(
+      decoration: BoxDecoration(
+        // color: const Color(0xFFbdb29b),
+        color: Colors.brown[200],
+        image: DecorationImage(
+            image: AssetImage('assets/background.jpg'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+                Colors.black.withOpacity(0.6), BlendMode.dstATop)),
+      ),
+      // child: Center(child: Text('hello')),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: provider.gameSettings != null
+            ? SafeArea(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Header(),
+                      PlayersRow(),
+                      DurationRow(),
+                      OrientationRow(),
+                      RememberTick(),
+                      StartButton(),
+                    ],
+                  ),
                 ),
-              ),
-            )
-          : Center(child: CircularProgressIndicator()),
+              )
+            : Center(child: CircularProgressIndicator()),
+      ),
     );
   }
 }

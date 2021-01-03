@@ -19,9 +19,12 @@ class RememberTick extends StatelessWidget {
             CupertinoSwitch(
               value: provider.remember,
               onChanged: (value) => provider.remember = value,
+              trackColor: Colors.grey[800],
+              activeColor: Col.selected,
             ),
             SizedBox(width: 10),
-            Text('Save settings', style: TextStyle(fontSize: 20)),
+            Text('Save settings',
+                style: TextStyle(fontSize: 20, color: Colors.brown[50])),
           ],
         ),
       ),

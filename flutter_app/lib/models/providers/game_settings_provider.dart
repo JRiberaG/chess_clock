@@ -6,6 +6,7 @@ import 'package:flutter_app/utils/constants.dart';
 class GameSettingsProvider extends ChangeNotifier {
   GameSettings _gameSettings;
 
+  // region GameSettings
   get gameSettings => _gameSettings;
 
   set gameSettings(GameSettings gameSettings) {
@@ -21,27 +22,34 @@ class GameSettingsProvider extends ChangeNotifier {
         : gameSettings;
     notifyListeners();
   }
+  // endregion
 
+  // region Duration
   Duration get duration => _gameSettings.duration;
 
   set duration(Duration duration) {
     _gameSettings.duration = duration;
     notifyListeners();
   }
+  // endregion
 
+  // region PlayerSettings
   List<PlayerSettings> get playerSettings => _gameSettings.playerSettings;
 
   set playerSettings(List<PlayerSettings> playerSettings) {
     _gameSettings.playerSettings = playerSettings;
     notifyListeners();
   }
+  // endregion
 
+  // region Orientation
   int get orientation => _gameSettings.orientation;
 
   set orientation(int orientation) {
     _gameSettings.orientation = orientation;
     notifyListeners();
   }
+  // endregion
 
   clear() => _gameSettings = null;
 }
